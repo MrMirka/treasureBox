@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://preview.babylonjs.com/cannon.js"></script>
+        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+
+        var startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
+
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+        var createScene = function () {
+        	var scene = new BABYLON.Scene(engine);
+        	//scene.clearColor = BABYLON.Color3.Black();
+			scene.clearColor = new BABYLON.Color3(1, 0, 0);
+        	// -----------------------------------------------
+        	// function Ribbon
+        	// mesh : a BABYLON.Mesh object
+        	// pathArray : array populated with paths; path = arrays of Vector3
+        	// doubleSided : boolean, true if the ribbon has got two reflective faces
+        	// closeArray : boolean, true if paths array is a loop => adds a extra ribbon joining last path and first path
+        	// closePath : boolean, true if paths are circular => last point joins first point, default false
+        	// offset : default  path length / 2, only for a single path
+        	// scene : the current scene
+        	var createRibbon = function(mesh, pathArray, doubleSided, closeArray, closePath, offset, scene) {
+        		var positions = [];
+        		var indices = [];
+        		var indicesRecto = [];
+        		var indicesVerso = [];
+        		var normals = [];
+        		var normalsRecto = [];
+        		var normalsVerso = [];
+        		var uvs = [];
+        		var us = [];		// us[path_id] = [uDist1, uDist2, uDist3 ... ] distances between points on path path_id
+        		var vs = [];		// vs[i] = [vDist1, vDist2, vDist3, ... ] distances between points i of consecutives paths from pathArray
+        		var uTotalDistance = []; // uTotalDistance[p] : total distance of path p
+        		var vTotalDistance = []; //  vTotalDistance[i] : total distance between points i of first and last path from pathArray
+        		var minlg;		  // minimal length among all paths from pathArray
+        		var lg = [];		// array of path lengths : nb of vertex per path
+        		var idx = [];	   // array of path indexes : index of each path (first vertex) in positions array
+        
+        		closeArray = closeArray || false;
+        		closePath = closePath || false;
+        		doubleSided = doubleSided || false;
+        		var defaultOffset = Math.floor(pathArray[0].length / 2);
+        		offset = offset || defaultOffset;
+        		offset = offset > defaultOffset ? defaultOffset : Math.floor(offset);
+        
+        		// single path in pathArray
+        		if ( pathArray.length < 2) {
+        			var ar1 = [];
+        			var ar2 = [];
+        			for (var i = 0; i < pathArray[0].length - offset; i++) {
+        			ar1.push(pathArray[0][i]);
+        			ar2.push(pathArray[0][i+offset]);
+        			}
+        			pathArray = [ar1, ar2];
+        		}
+        
+        		// positions and horizontal distances
+        		var idc = 0;
+        		minlg = pathArray[0].length;
+        		for(var p = 0; p < pathArray.length; p++) {
+        			uTotalDistance[p] = 0;
+        			us[p] = [0];
+        			var path = pathArray[p];
+        			var l = path.length;
+        			minlg = (minlg < l) ? minlg : l;
+        			lg[p] = l;
+        			idx[p] = idc;
+        			var j = 0;
+        			while (j < l) {
+        			positions.push(path[j].x, path[j].y, path[j].z);
+        			if (j > 0) {
+        				var vectlg = path[j].subtract(path[j-1]).length();
+        				var dist = vectlg + uTotalDistance[p];
+        				us[p].push(dist);
+        				uTotalDistance[p] = dist;
+        			}
+        			j++;
+        			}
+        			if ( closePath ) {
+        			var vectlg = path[0].subtract(path[j-1]).length();
+        			var dist = vectlg + uTotalDistance[p];
+        			uTotalDistance[p] = dist;
+        			}
+        			idc += l;
+        		}
+        
+        		// vertical distances
+        		for(var i = 0; i < minlg; i++) {
+        			vTotalDistance[i] = 0;
+        			vs[i] =[0];
+        			for (var p = 0; p < pathArray.length-1; p++) {
+        			var path1 = pathArray[p];
+        			var path2 = pathArray[p+1];
+        			var vectlg = path2[i].subtract(path1[i]).length();
+        			var dist =  vectlg + vTotalDistance[i];
+        			vs[i].push(dist);
+        			vTotalDistance[i] = dist;
+        			}
+        			if (closeArray) {
+        			var path1 = pathArray[p];
+        			var path2 = pathArray[0];
+        			var vectlg = path2[i].subtract(path1[i]).length();
+        			var dist =  vectlg + vTotalDistance[i];
+        			vTotalDistance[i] = dist;
+        			}
+        		}
+        
+        		// uvs
+        		for(var p = 0; p < pathArray.length; p++) {
+        			for(var i = 0; i < minlg; i++) {
+        			var u = us[p][i] / uTotalDistance[p];
+        			var v = vs[i][p] / vTotalDistance[i];
+        			uvs.push(u, v);
+        			}
+        		}
+        
+        		// indices
+        		var p = 0;					// path index
+        		var i = 0;					// positions array index
+        		var l1 = lg[p] - 1;		   // path1 length
+        		var l2 = lg[p+1] - 1;		 // path2 length
+        		var min = ( l1 < l2 ) ? l1 : l2 ;   // index d'arrÃªt de i dans le path en cours
+        		var shft = idx[1] - idx[0];						  // shift
+        		var path1nb = closeArray ? lg.length : lg.length -1;	 // combien de path1 Ã  parcourir
+        		while ( i <= min && p < path1nb ) {					  // on reste sur le min des deux paths et on ne va pas au delÃ  de l'avant-dernier
+        
+        			// draw two triangles between path1 (p1) and path2 (p2) : (p1.i, p2.i, p1.i+1) and (p2.i+1, p1.i+1, p2.i) clockwise
+        			var t1 = i;
+        			var t2 = i + shft;
+        			var t3 = i +1;
+        			var t4 = i + shft + 1;
+        
+        			indices.push(i, i+shft, i+1);
+        			indices.push(i+shft+1, i+1, i+shft);
+        			i += 1;
+        			if ( i == min  ) {						  // dÃ¨s qu'on atteint la fin d'un des deux paths consÃ©cutifs, on passe au suivant s'il existe
+        			if (closePath) {						  // if closePath, add last triangles between start and end of the paths
+        				indices.push(i, i+shft, idx[p]);
+        				indices.push(idx[p]+shft, idx[p], i+shft);
+        				t3 = idx[p];
+        				t4 = idx[p] + shft;
+        			}
+        			p++;
+        			if ( p == lg.length - 1 ) {							// si on a atteint le dernier path du tableau <=> closeArray == true
+        				shft = idx[0] - idx[p];
+        				l1 = lg[p] - 1;
+        				l2 = lg[0] - 1;
+        			}
+        			else {
+        				shft = idx[p+1] - idx[p];
+        				l1 = lg[p] - 1;
+        				l2 = lg[p+1] - 1;
+        			}
+        
+        			i = idx[p];
+        			min = ( l1 < l2 ) ? l1 + i : l2 + i;
+        			}
+        		}
+        
+        		//faces(false, indices);
+        		BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        
+        		mesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, positions, false);
+        		mesh.setVerticesData(BABYLON.VertexBuffer.NormalKind, normals, false);
+        		mesh.setIndices(indices);
+        		mesh.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs, false);
+        	};
+        	// END RibbonMesh
+        	// -----------------------------------------------
+        	var harmonic = function(m, lat, long, paths) {
+        		var pi = Math.PI;
+        		var pi2 = Math.PI * 2;
+        		var steplat = pi / lat;
+        		var steplon = pi2 / long;
+        
+        		for (var theta = 0; theta <= pi2; theta += steplon) {
+        			var path = [];
+        
+        			for (var phi = 0; phi <= pi; phi += steplat ) {
+        				var r = 0;
+        				r += Math.pow( Math.sin(m[0]*phi), m[1] );
+        				r += Math.pow( Math.cos(m[2]*phi), m[3] );
+        				r += Math.pow( Math.sin(m[4]*theta), m[5] );
+        				r += Math.pow( Math.cos(m[6]*theta), m[7] );
+        
+        				var p = new BABYLON.Vector3( r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta) );
+        				path.push(p);
+        			}
+        			paths.push(path);
+        		}
+        		paths.push(paths[0]);
+        	};
+        	// -----------------------------------------------
+        	var showPath = function(path, scene) {
+        		var line = BABYLON.Mesh.CreateLines("line", path, scene )
+        	};
+        	// -----------------------------------------------
+        	var paths = [];
+        
+        	// here's the 'm' numbers used to create the SH shape
+        	// var m = [7,3,8,0,9,2,7,2];
+        	var m = [
+        		Math.random().toFixed(1)*10,
+        		Math.random().toFixed(1)*10,
+        
+        		// 1, // this makes the shapes more basic, less spikey.  Or use this line...
+        		Math.random().toFixed(1)*10,
+        
+        		Math.random().toFixed(1)*10,
+        		Math.random().toFixed(1)*10,
+        		Math.random().toFixed(1)*10,
+        		Math.random().toFixed(1)*10,
+        		Math.random().toFixed(1)*10
+        	];
+        	console.log("m-numbers: " + m);
+        	// -----------------------------------------------
+        	// go make the shape!
+        	harmonic(m, 64, 64, paths);
+        
+        /*
+        	for (var p = 0; p < paths.length; p++) {
+        	showPath(paths[p], scene);
+        	}
+        */
+        
+        	// make a blank mesh and scale it up. Used soon, past the fire stuff.
+        	var mesh = new BABYLON.Mesh("mesh", scene);
+        	mesh.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
+        	// -----------------------------------------------
+        	// clone of the BJS fire procedural texture's shader
+        	BABYLON.Effect.ShadersStore["myFirePixelShader"]=
+        
+        		"#ifdef GL_ES\r\n"+
+        		"precision highp float;\r\n"+
+        		"#endif\r\n"+
+        
+        		"uniform float time;\r\n"+
+        		"uniform vec3 c1;\r\n"+
+        		"uniform vec3 c2;\r\n"+
+        		"uniform vec3 c3;\r\n"+
+        		"uniform vec3 c4;\r\n"+
+        		"uniform vec3 c5;\r\n"+
+        		"uniform vec3 c6;\r\n"+
+        		"uniform vec2 speed;\r\n"+
+        		"uniform float shift;\r\n"+
+        		"uniform float alphaThreshold;\r\n"+
+        
+        		"varying vec2 vUV;\r\n"+
+        
+        		"float rand(vec2 n) {\r\n"+
+        		"	return fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);\r\n"+
+        		"}\r\n"+
+        
+        		"float noise(vec2 n) {\r\n"+
+        		"	const vec2 d = vec2(0.0, 1.0);\r\n"+
+        		"	vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\r\n"+
+        		"	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);\r\n"+
+        		"}\r\n"+
+        
+        		"float fbm(vec2 n) {\r\n"+
+        		"	float total = 0.0, amplitude = 1.0;\r\n"+
+        		"	for (int i = 0; i < 4; i++) {\r\n"+
+        		"		total += noise(n) * amplitude;\r\n"+
+        		"		n += n;\r\n"+
+        		"		amplitude *= .5;\r\n"+
+        		"	}\r\n"+
+        		"	return total;\r\n"+
+        		"}\r\n"+
+        
+        		"void main() {\r\n"+
+        		"	vec2 p = vUV * 8.0;\r\n"+
+        		"	float q = fbm(p - time * .1);\r\n"+
+        		"	vec2 r = vec2(fbm(p + q + time * speed.x - p.x - p.y), fbm(p + q - time * speed.y));\r\n"+
+        		"	vec3 c = mix(c1, c2, fbm(p + r)) + mix(c3, c4, r.x) - mix(c5, c6, r.y);\r\n"+
+        		"	vec3 color = c * cos(shift * vUV.y);\r\n"+
+        		"	float luminance = dot(color.rgb, vec3(0.3, 0.59, 0.11));\r\n"+
+        
+        		"	gl_FragColor = vec4(color, luminance * alphaThreshold + (1.0 - alphaThreshold));\r\n"+
+        	"}";
+        	// alert(BABYLON.Effect.ShadersStore["myFirePixelShader"]);
+        	// -----------------------------------------------
+        	// create/texturize the fire material that uses it
+        	var fireMaterial = new BABYLON.StandardMaterial("fontainSculptur2", scene);
+        	var fireTexture = new BABYLON.FireProceduralTexture("fire", 256, scene);
+        	fireTexture.level = 1;
+        
+        	// black area compensator
+        	fireTexture.uScale = .7;
+        	fireTexture.vScale = .7;
+        
+        	// el forco de shadero
+        	fireTexture.setFragment("myFire");
+        
+        	// turn more fire material knobs
+        	fireMaterial.diffuseColor = new BABYLON.Color3(Math.random()/2, Math.random()/2, Math.random()/2);
+        	fireMaterial.diffuseTexture = fireTexture;
+        	fireMaterial.alpha = 1;
+        	// fireMaterial.opacityTexture = fireTexture;
+        	// fireMaterial.opacityColor = new BABYLON.Color3(0, 3, 0);
+        	fireMaterial.specularTexture = fireTexture;
+        	fireMaterial.emissiveTexture = fireTexture;
+        	fireMaterial.specularPower = 4;
+        	fireMaterial.backFaceCulling = false;
+        
+        	// use a preset firecolors 6-pack
+        	// fireTexture.fireColors = BABYLON.FireProceduralTexture.PurpleFireColors;
+        
+        	// or stock the firecolors array with six colors
+        	fireTexture.fireColors = [
+        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
+        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
+        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
+        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
+        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
+        		new BABYLON.Color3(Math.random(), Math.random(), Math.random())
+        	];
+        	// -----------------------------------------------
+        	// assign it to the mesh
+        	mesh.material = fireMaterial;
+        	// -----------------------------------------------
+        	// here we go loop-tee-loo
+        	createRibbon(mesh, paths, false, null, scene);
+        	// -----------------------------------------------
+        	// Adding some experimenter's lights
+        	var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 0, 0), scene);
+        	light.diffuse = new BABYLON.Color3(1, 1, 1);
+        	// light.specular = new BABYLON.Color3(1, 1, 1);
+        	light.intensity = .25;
+        
+        	// var light = new BABYLON.DirectionalLight("Dir0", new BABYLON.Vector3(0, 1, 0), scene);
+        	// light.diffuse = new BABYLON.Color3(1, 1, 1);
+        	// light.specular = new BABYLON.Color3(1, 1, 1);
+        
+        	// var light = new BABYLON.SpotLight("Spot0", new BABYLON.Vector3(0, -10, 0), new BABYLON.Vector3(0, 1, 0), 0.8, 2, scene);
+        	// light.diffuse = new BABYLON.Color3(1, 1, 1);
+        	// light.specular = new BABYLON.Color3(1, 1, 1);
+        	// light.intensity = 0;
+        
+        	// var light = new BABYLON.HemisphericLight("Hemi0", new BABYLON.Vector3(0, -1, 0), scene);
+        	// light.diffuse = new BABYLON.Color3(1, 1, 1);
+        	// light.specular = new BABYLON.Color3(1, 1, 1);
+        	// light.intensity = .7;
+        
+        	//Adding an Arc Rotate Camera
+        	var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI/2, 1, 20, BABYLON.Vector3.Zero(), scene);
+        	camera.attachControl(canvas, false);
+        	camera.wheelPrecision = 50;  // lower = faster
+        	// -----------------------------------------------
+        /*
+        	// a handy m&m for experimenting-with.  (mesh & material)
+        	var box = BABYLON.Mesh.CreateBox("box", 1, scene);
+        	// var box = BABYLON.Mesh.CreatePlane("box", 50, scene);
+        	box.visibility = 1;
+        	// camera.target = box;
+        
+        	box.material = new BABYLON.StandardMaterial("bmat", scene);
+        	// box.material.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+        	box.position = new BABYLON.Vector3(0, -.1, 0);
+        	box.rotation = new BABYLON.Vector3(-Math.PI/2, 0, 0);
+        	box.showBoundingBox = true;
+        */
+        	// -----------------------------------------------
+        	// Create the "God Rays" effect (volumetric light scattering)
+        	var godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, mesh, 50, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
+        	// alert("gr.mesh name: " + godrays.mesh.name);
+        
+        	// no particles in this demo, so we leave this false
+        	// godrays._volumetricLightScatteringRTT.renderParticles = true;
+        
+        	// some advanced godrays settings for you to play-with
+        	godrays.exposure = 0.2;
+        	godrays.decay = 0.96815;
+        	godrays.weight = 0.58767;
+        	godrays.density = 0.926;
+        	// -----------------------------------------------
+        	// not sure about this.  Right now, with my active hemi, it does little/nothing.
+        	light.position = godrays.mesh.position;
+        	// -----------------------------------------------
+        /*
+        	// this displays a small flat plane to better see the fire texture
+        	var monitor = BABYLON.Mesh.CreatePlane("mon", 1.8, scene);
+        	monitor.rotation = new BABYLON.Vector3(0, Math.PI, 0);
+        	monitor.position = new BABYLON.Vector3(4, 2, -1);
+        	monitor.material = fireMaterial;
+        	monitor.showBoundingBox = true;
+        	// monitor.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+        */
+        	// -----------------------------------------------
+        	// how about some animation?
+        	var alpha = 1;
+        	scene.registerBeforeRender(function() {
+        		mesh.rotation.y -= 0.03;
+        		mesh.rotation.x += 0.01;
+        
+        		// activate these 2 lines for y-axis scale-pulsing
+        		// alpha += 0.3;
+        		// mesh.scaling.y = (Math.cos(alpha)/2)+.7;
+        
+        	});
+        
+        
+        	return scene;
+        }
+        
+                window.initFunction = async function() {
+                    
+                    
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return createDefaultEngine();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
+
+                    window.engine = await asyncEngineCreation();
+        if (!engine) throw 'engine should not be null.';
+        startRenderLoop(engine, canvas);
+        window.scene = createScene();};
+        initFunction().then(() => {sceneToRender = scene                    
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>
