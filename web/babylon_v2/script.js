@@ -15,6 +15,8 @@ var canvas = document.getElementById("renderCanvas");
         var createScene = function () {
         	var scene = new BABYLON.Scene(engine);
 			scene.clearColor = new BABYLON.Color3(1, 0, 0);
+          
+          
         	
         	var harmonic = function(m, lat, long, paths) {
         		var pi = Math.PI;
@@ -135,6 +137,7 @@ var canvas = document.getElementById("renderCanvas");
         
         	// turn more fire material knobs
         	fireMaterial.diffuseColor = new BABYLON.Color3(Math.random()/2, Math.random()/2, Math.random()/2);
+        	
         	fireMaterial.diffuseTexture = fireTexture;
         	fireMaterial.alpha = 1;
         	fireMaterial.specularTexture = fireTexture;
@@ -151,7 +154,7 @@ var canvas = document.getElementById("renderCanvas");
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
-        		new BABYLON.Color3(Math.random(), Math.random(), Math.random())
+        		new BABYLON.Color3(Math.random(), Math.random(), Math.random())   
         	];
         
 
@@ -175,7 +178,7 @@ var canvas = document.getElementById("renderCanvas");
         	
        
 
-            BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure.glb", scene, function (meshes, particleSystems, skeletons) {
+            BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
                 meshes.forEach(mesh => {
                     if(mesh.material) {
                         mesh.scaling = new BABYLON.Vector3(0.25, 0.25, 0.25);
@@ -195,17 +198,20 @@ var canvas = document.getElementById("renderCanvas");
             //BABYLON.SceneLoader.ImportMesh("", "/models/", "close_chest.glb", scene, function (meshes, particleSystems, skeletons) {
                 meshes.forEach(mesh => {
                     if(mesh.material) {
+                        var environment = new BABYLON.HDRCubeTexture("./textures/HDR_029_Sky_Cloudy_Ref.dds", scene, 128, false, true, false, true);
                         const myMaterial = new BABYLON.StandardMaterial();
                         myMaterial.diffuseColor = new BABYLON.Color3(.1, 0.4, 0.2);
                         myMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
                         myMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+                        
                         mesh.material = myMaterial;
+                        
                         
                     }
                   })
             });
         
-        
+            
         	return scene;
         }
         
