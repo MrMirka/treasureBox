@@ -198,7 +198,6 @@ var canvas = document.getElementById("renderCanvas");
             //BABYLON.SceneLoader.ImportMesh("", "/models/", "close_chest.glb", scene, function (meshes, particleSystems, skeletons) {
                 meshes.forEach(mesh => {
                     if(mesh.material) {
-                        var environment = new BABYLON.HDRCubeTexture("./textures/HDR_029_Sky_Cloudy_Ref.dds", scene, 128, false, true, false, true);
                         const myMaterial = new BABYLON.StandardMaterial();
                         myMaterial.diffuseColor = new BABYLON.Color3(.1, 0.4, 0.2);
                         myMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
@@ -210,13 +209,97 @@ var canvas = document.getElementById("renderCanvas");
                     }
                   })
             });
-        
-            
+
+			//GUI
+			
+			var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+			var panel = new BABYLON.GUI.StackPanel();
+			panel.width = "200px";
+			panel.isVertical = true;
+			panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+			panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+			advancedTexture.addControl(panel);
+
+			var picker1 = new BABYLON.GUI.ColorPicker();
+			picker1.value = fireTexture.fireColors[0];
+			picker1.height = "100px";
+			picker1.width = "100px";
+			picker1.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+			picker1.onValueChangedObservable.add(function(value) { // value is a color3
+				fireTexture.fireColors[1].copyFrom(value);
+			});
+
+			var picker2 = new BABYLON.GUI.ColorPicker();
+			picker2.value = fireTexture.fireColors[1];
+			picker2.height = "100px";
+			picker2.width = "100px";
+			picker2.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+			picker2.onValueChangedObservable.add(function(value) { // value is a color3
+				fireTexture.fireColors[1].copyFrom(value);
+			});
+
+			var picker3 = new BABYLON.GUI.ColorPicker();
+			picker3.value = fireTexture.fireColors[2];
+			picker3.height = "100px";
+			picker3.width = "100px";
+			picker3.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+			picker3.onValueChangedObservable.add(function(value) { // value is a color3
+				fireTexture.fireColors[2].copyFrom(value);
+			});
+
+			var picker4 = new BABYLON.GUI.ColorPicker();
+			picker4.value = fireTexture.fireColors[3];
+			picker4.height = "100px";
+			picker4.width = "100px";
+			picker4.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+			picker4.onValueChangedObservable.add(function(value) { // value is a color3
+				fireTexture.fireColors[3].copyFrom(value);
+			});
+
+			var picker5 = new BABYLON.GUI.ColorPicker();
+			picker5.value = fireTexture.fireColors[4];
+			picker5.height = "100px";
+			picker5.width = "100px";
+			picker5.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+			picker5.onValueChangedObservable.add(function(value) { // value is a color3
+				fireTexture.fireColors[4].copyFrom(value);
+			});
+
+			var picker6 = new BABYLON.GUI.ColorPicker();
+			picker6.value = fireTexture.fireColors[5];
+			picker6.height = "100px";
+			picker6.width = "100px";
+			picker6.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+			picker6.onValueChangedObservable.add(function(value) { // value is a color3
+				fireTexture.fireColors[5].copyFrom(value);
+			});
+
+			panel.addControl(picker1);    
+			panel.addControl(picker2);    
+			panel.addControl(picker3);    
+			panel.addControl(picker4);    
+			panel.addControl(picker5);    
+			panel.addControl(picker6);
+			
+			//LightPanel
+			var panelLight = new BABYLON.GUI.StackPanel();
+			panelLight.width = "200px";
+			panelLight.isVertical = true;
+			panelLight.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+			panelLight.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+			panelLight.ignoreLayoutWarnings = true;
+			advancedTexture.addControl(panelLight);
+			
+			
+			//addHeader("PointLight", panelLight);
+			addPointLight("PointLight_1", new BABYLON.Vector3(2,3,4), panelLight, advancedTexture);
+			
+
         	return scene;
         }
         
                 window.initFunction = async function() {
-                    
                     
                     var asyncEngineCreation = async function() {
                         try {
@@ -238,3 +321,66 @@ var canvas = document.getElementById("renderCanvas");
         window.addEventListener("resize", function () {
             engine.resize();
         });
+
+	function addHeader(text, panel){
+		let header = new BABYLON.GUI.TextBlock();
+		header.text = text;
+		header.height = "30px";
+		header.color = "white";
+		panel.addControl(header); 
+	}
+
+	function addSlider(text, min, max, def, obj, panel, gui, root){
+		var insidePanel = new BABYLON.GUI.StackPanel();
+		insidePanel.width = "74px";
+		insidePanel.isVertical = true;
+		insidePanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+		insidePanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+		insidePanel.ignoreLayoutWarnings = true;
+		gui.addControl(insidePanel);
+		addHeader(text, insidePanel);
+		let slider = new BABYLON.GUI.Slider();
+		slider.minimum = min;
+		slider.maximum = max;
+		slider.value = def;
+		slider.height = "8px";
+		slider.width = "76px";
+		slider.onValueChangedObservable.add(function(value) {
+		if (obj) {
+				switch(text){
+					case "X-axis":
+						obj.position.x = value;
+						break;	
+					case "Y-axis":
+						obj.position.y = value;
+						break;	
+					case "Z-axis":
+						obj.position.x = value;
+						break;			
+				}		
+			}
+		});
+		insidePanel.addControl(slider); 
+		panel.addControl(insidePanel); 
+		
+	}
+
+	function addPointLight(text,position, panel, gui){
+		let pointLight = new BABYLON.PointLight(text, position, scene);
+		pointLight.intensity = 2;
+		//addHeader(text, panel);
+
+		var panelHorizontal = new BABYLON.GUI.StackPanel();
+		panelHorizontal.width = "200px";
+		panelHorizontal.isVertical = false;
+		panelHorizontal.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+		panelHorizontal.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+		panelHorizontal.ignoreLayoutWarnings = true;
+		gui.addControl(panelHorizontal);
+
+		addSlider("X-axis", -10,10,0,pointLight,panelHorizontal, gui);
+		addSlider("Y-axis", -10,10,0,pointLight,panelHorizontal, gui);
+		addSlider("Z-axis", -10,10,0,pointLight,panelHorizontal, gui);
+		
+		   
+	}
