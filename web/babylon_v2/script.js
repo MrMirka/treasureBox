@@ -292,9 +292,7 @@ var canvas = document.getElementById("renderCanvas");
 			advancedTexture.addControl(panelLight);
 			
 			
-			//addHeader("PointLight", panelLight);
-			addPointLight("PointLight_1", new BABYLON.Vector3(2,3,4), panelLight, advancedTexture);
-			
+			addPointLight("PointLight_1", new BABYLON.Vector3(2,3,4), advancedTexture, true);
 
         	return scene;
         }
@@ -330,7 +328,7 @@ var canvas = document.getElementById("renderCanvas");
 		panel.addControl(header); 
 	}
 
-	function addSlider(text, min, max, def, obj, panel, gui, root){
+	function addSlider(text, min, max, def, obj, panel, gui){
 		var insidePanel = new BABYLON.GUI.StackPanel();
 		insidePanel.width = "74px";
 		insidePanel.isVertical = true;
@@ -356,7 +354,10 @@ var canvas = document.getElementById("renderCanvas");
 						break;	
 					case "Z-axis":
 						obj.position.x = value;
-						break;			
+						break;
+					case "intensity":
+						obj.intensity = value;
+
 				}		
 			}
 		});
@@ -365,22 +366,22 @@ var canvas = document.getElementById("renderCanvas");
 		
 	}
 
-	function addPointLight(text,position, panel, gui){
+	function addPointLight(text,position, gui, UI){
 		let pointLight = new BABYLON.PointLight(text, position, scene);
 		pointLight.intensity = 2;
-		//addHeader(text, panel);
 
-		var panelHorizontal = new BABYLON.GUI.StackPanel();
-		panelHorizontal.width = "200px";
-		panelHorizontal.isVertical = false;
-		panelHorizontal.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-		panelHorizontal.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-		panelHorizontal.ignoreLayoutWarnings = true;
-		gui.addControl(panelHorizontal);
-
-		addSlider("X-axis", -10,10,0,pointLight,panelHorizontal, gui);
-		addSlider("Y-axis", -10,10,0,pointLight,panelHorizontal, gui);
-		addSlider("Z-axis", -10,10,0,pointLight,panelHorizontal, gui);
+		if(UI) {
+			var panelHorizontal = new BABYLON.GUI.StackPanel();
+			panelHorizontal.width = "200px";
+			panelHorizontal.isVertical = false;
+			panelHorizontal.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+			panelHorizontal.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+			panelHorizontal.ignoreLayoutWarnings = true;
+			gui.addControl(panelHorizontal);
+			addSlider("X-axis", -10,10,0,pointLight,panelHorizontal, gui);
+			addSlider("Y-axis", -10,10,0,pointLight,panelHorizontal, gui);
+			addSlider("Z-axis", -10,10,0,pointLight,panelHorizontal, gui);
+			addSlider("intensity", 0,10,1,pointLight,panelHorizontal, gui);
+		}
 		
-		   
 	}
