@@ -15,6 +15,7 @@ var canvas = document.getElementById("renderCanvas");
         var createScene = function () {
         	var scene = new BABYLON.Scene(engine);
 			scene.clearColor = new BABYLON.Color3(1, 0, 0);
+			scene.environmentTexture = new BABYLON.CubeTexture("textures/environment.env", scene)
           
           
         	
@@ -159,13 +160,13 @@ var canvas = document.getElementById("renderCanvas");
         
 
         	// Adding some experimenter's lights
-        	var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 0, 0), scene);
+        	 var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 0, 0), scene);
         	light.diffuse = new BABYLON.Color3(1, 1, 1);
         	light.intensity = .25;
-
-            var light2 = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 3, 0), scene);
+ 
+           /*  var light2 = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 3, 0), scene);
         	light2.diffuse = new BABYLON.Color3(1, 1, 1);
-        	light2.intensity = 0.45;
+        	light2.intensity = 0.45; */
         
         
         	//Adding an Arc Rotate Camera
@@ -178,11 +179,13 @@ var canvas = document.getElementById("renderCanvas");
         	
        
 
-            BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
+             BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
                 meshes.forEach(mesh => {
+				
                     if(mesh.material) {
-                        mesh.scaling = new BABYLON.Vector3(0.25, 0.25, 0.25);
-                        mesh.position = new BABYLON.Vector3(0, 1, 0);
+                        mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+                        mesh.position = new BABYLON.Vector3(-0.4, 0.6, 0);
+                        mesh.rotation = new BABYLON.Vector3(0,90,0);
                         mesh.material = fireMaterial;
                         var godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, mesh, 50, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
                         godrays.exposure = 0.2;
@@ -192,21 +195,27 @@ var canvas = document.getElementById("renderCanvas");
                         light.position = godrays.mesh.position;
                     }
                   })
-            });
+            }); 
 
-            BABYLON.SceneLoader.ImportMesh("", "/models/simple_chest/", "scene.gltf", scene, function (meshes, particleSystems, skeletons) {
+            BABYLON.SceneLoader.ImportMesh("", "/models/", "armor_chest.glb", scene, function (meshes, particleSystems, skeletons) {
             //BABYLON.SceneLoader.ImportMesh("", "/models/", "close_chest.glb", scene, function (meshes, particleSystems, skeletons) {
                 meshes.forEach(mesh => {
+					const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 0.2});
+					var pointLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(1.5, 1.5, -2), new BABYLON.Vector3(0, 0, 0), Math.PI *2, 26, scene);
+					pointLight.intensity = 190;
+					pointLight.specular = new BABYLON.Color3(1,0,0);
+					sphere.position = pointLight.position;
                     if(mesh.material) {
-                        const myMaterial = new BABYLON.StandardMaterial();
-                        myMaterial.diffuseColor = new BABYLON.Color3(.1, 0.4, 0.2);
-                        myMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
-                        myMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
-                        
-                        mesh.material = myMaterial;
-                        
-                        
+						//mesh.material.roughness = 0;
+            
                     }
+					if(mesh.mesh) {
+						var shadowGenerator = new BABYLON.ShadowGenerator(1024, pointLight);
+						shadowGenerator.addShadowCaster(pointLight);
+						shadowGenerator.useExponentialShadowMap = true;
+						mesh.receiveShadows = true;
+
+					}
                   })
             });
 
@@ -281,6 +290,10 @@ var canvas = document.getElementById("renderCanvas");
 			panel.addControl(picker4);    
 			panel.addControl(picker5);    
 			panel.addControl(picker6);
+
+			//Add light
+			var simpleEnv = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
+			simpleEnv.intensity = 0;
 			
 			//LightPanel
 			var panelLight = new BABYLON.GUI.StackPanel();
