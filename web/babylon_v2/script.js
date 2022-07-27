@@ -202,7 +202,7 @@ var canvas = document.getElementById("renderCanvas");
                 meshes.forEach(mesh => {
 					const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 0.2});
 					var pointLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(1.5, 1.5, -2), new BABYLON.Vector3(0, 0, 0), Math.PI *2, 26, scene);
-					pointLight.intensity = 190;
+					pointLight.intensity = 2;
 					pointLight.specular = new BABYLON.Color3(1,0,0);
 					sphere.position = pointLight.position;
                     if(mesh.material) {
@@ -291,9 +291,7 @@ var canvas = document.getElementById("renderCanvas");
 			panel.addControl(picker5);    
 			panel.addControl(picker6);
 
-			//Add light
-			var simpleEnv = new BABYLON.HemisphericLight("HemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-			simpleEnv.intensity = 0;
+			
 			
 			//LightPanel
 			var panelLight = new BABYLON.GUI.StackPanel();
