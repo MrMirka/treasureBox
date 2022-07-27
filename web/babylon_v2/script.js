@@ -179,7 +179,7 @@ var canvas = document.getElementById("renderCanvas");
         	
        
 
-             BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
+              BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
                 meshes.forEach(mesh => {
 				
                     if(mesh.material) {
@@ -195,18 +195,24 @@ var canvas = document.getElementById("renderCanvas");
                         light.position = godrays.mesh.position;
                     }
                   })
-            }); 
+            });  
 
+            //BABYLON.SceneLoader.ImportMesh("", "/models/", "chest_vertion2.glb", scene, function (meshes, particleSystems, skeletons) {
             BABYLON.SceneLoader.ImportMesh("", "/models/", "armor_chest.glb", scene, function (meshes, particleSystems, skeletons) {
-            //BABYLON.SceneLoader.ImportMesh("", "/models/", "close_chest.glb", scene, function (meshes, particleSystems, skeletons) {
+            
                 meshes.forEach(mesh => {
-					const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 0.2});
+
+					/*  const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 0.2});
 					var pointLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(1.5, 1.5, -2), new BABYLON.Vector3(0, 0, 0), Math.PI *2, 26, scene);
 					pointLight.intensity = 2;
 					pointLight.specular = new BABYLON.Color3(1,0,0);
-					sphere.position = pointLight.position;
+					sphere.position = pointLight.position;  */
+
+					
                     if(mesh.material) {
 						//mesh.material.roughness = 0;
+						var lightmap = new BABYLON.Texture("textures/candleopacity.png", scene);
+						//mesh.material.lightmapTexture = lightmap;
             
                     }
 					if(mesh.mesh) {
@@ -280,7 +286,7 @@ var canvas = document.getElementById("renderCanvas");
 			picker6.height = "100px";
 			picker6.width = "100px";
 			picker6.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-			picker6.onValueChangedObservable.add(function(value) { // value is a color3
+			picker6.onValueChangedObservable.add(function(value) { 
 				fireTexture.fireColors[5].copyFrom(value);
 			});
 
@@ -291,8 +297,6 @@ var canvas = document.getElementById("renderCanvas");
 			panel.addControl(picker5);    
 			panel.addControl(picker6);
 
-			
-			
 			//LightPanel
 			var panelLight = new BABYLON.GUI.StackPanel();
 			panelLight.width = "200px";
@@ -301,7 +305,6 @@ var canvas = document.getElementById("renderCanvas");
 			panelLight.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
 			panelLight.ignoreLayoutWarnings = true;
 			advancedTexture.addControl(panelLight);
-			
 			
 			addPointLight("PointLight_1", new BABYLON.Vector3(2,3,4), advancedTexture, true);
 
@@ -380,6 +383,7 @@ var canvas = document.getElementById("renderCanvas");
 	function addPointLight(text,position, gui, UI){
 		let pointLight = new BABYLON.PointLight(text, position, scene);
 		pointLight.intensity = 2;
+		pointLight.radius = 1;
 
 		if(UI) {
 			var panelHorizontal = new BABYLON.GUI.StackPanel();
@@ -389,10 +393,10 @@ var canvas = document.getElementById("renderCanvas");
 			panelHorizontal.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
 			panelHorizontal.ignoreLayoutWarnings = true;
 			gui.addControl(panelHorizontal);
-			addSlider("X-axis", -10,10,0,pointLight,panelHorizontal, gui);
-			addSlider("Y-axis", -10,10,0,pointLight,panelHorizontal, gui);
-			addSlider("Z-axis", -10,10,0,pointLight,panelHorizontal, gui);
-			addSlider("intensity", 0,10,1,pointLight,panelHorizontal, gui);
+			addSlider("X-axis", -20,20,0,pointLight,panelHorizontal, gui);
+			addSlider("Y-axis", -20,20,0,pointLight,panelHorizontal, gui);
+			addSlider("Z-axis", -20,20,0,pointLight,panelHorizontal, gui);
+			addSlider("intensity", 0,100,1,pointLight,panelHorizontal, gui);
 		}
 		
 	}
