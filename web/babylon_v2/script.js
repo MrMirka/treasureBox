@@ -213,6 +213,9 @@ var canvas = document.getElementById("renderCanvas");
 						//mesh.material.roughness = 0;
 						var lightmap = new BABYLON.Texture("textures/candleopacity.png", scene);
 						//mesh.material.lightmapTexture = lightmap;
+
+						//Add metadata for mouse event
+						mesh.metadata = "armorChest";
             
                     }
 					if(mesh.mesh) {
@@ -224,6 +227,14 @@ var canvas = document.getElementById("renderCanvas");
 					}
                   })
             });
+
+			//Add mouse logic
+			scene.onPointerDown = function (evt, pickResult) {
+				if (pickResult.pickedMesh && pickResult.pickedMesh.metadata === "armorChest") {
+					console.log("CLICK")
+				}
+				
+			};
 
 			//GUI
 			
