@@ -164,15 +164,12 @@ var canvas = document.getElementById("renderCanvas");
         	light.diffuse = new BABYLON.Color3(1, 1, 1);
         	light.intensity = .25;
  
-           /*  var light2 = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 3, 0), scene);
-        	light2.diffuse = new BABYLON.Color3(1, 1, 1);
-        	light2.intensity = 0.45; */
         
         
         	//Adding an Arc Rotate Camera
-        	var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI/2, 1, 8, BABYLON.Vector3.Zero(), scene);
-        	camera.attachControl(canvas, false);
-        	camera.wheelPrecision = 50;  // lower = faster
+        	var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI * 0.12, 1.1, 5, BABYLON.Vector3.Zero(), scene);
+        	//camera.attachControl(canvas, false);
+        	//camera.wheelPrecision = 50;  // lower = faster
         	// -----------------------------------------------
     
         	
@@ -249,9 +246,9 @@ var canvas = document.getElementById("renderCanvas");
 		
 			};
 			canvas.addEventListener("pointermove", onPointerMove, false);
+			
 
 			//GUI
-			
 			var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
 			var panel = new BABYLON.GUI.StackPanel();
