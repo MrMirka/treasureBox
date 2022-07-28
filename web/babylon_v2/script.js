@@ -229,12 +229,26 @@ var canvas = document.getElementById("renderCanvas");
             });
 
 			//Add mouse logic
+			//--click
 			scene.onPointerDown = function (evt, pickResult) {
 				if (pickResult.pickedMesh && pickResult.pickedMesh.metadata === "armorChest") {
 					console.log("CLICK")
 				}
 				
 			};
+
+			//--mouseover
+			var onPointerMove = function(e) {
+				var result = scene.pick(scene.pointerX, scene.pointerY,null,null,camera);
+				if (result.hit && result.pickedMesh.metadata == "armorChest") {
+					
+					console.log("Mouse on chest");
+				}else {
+					console.log("Mouse out chest");
+				}
+		
+			};
+			canvas.addEventListener("pointermove", onPointerMove, false);
 
 			//GUI
 			
