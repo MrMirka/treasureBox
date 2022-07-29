@@ -10,6 +10,8 @@ var canvas = document.getElementById("renderCanvas");
 
         var engine = null;
         var scene = null;
+		var runAnim = false;
+		var godrays;
         var sceneToRender = null;
         var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
         var createScene = function () {
@@ -184,12 +186,16 @@ var canvas = document.getElementById("renderCanvas");
                         mesh.position = new BABYLON.Vector3(-0.4, 0.6, 0);
                         mesh.rotation = new BABYLON.Vector3(0,90,0);
                         mesh.material = fireMaterial;
-                        var godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, mesh, 50, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
+                        godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, mesh, 50, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
                         godrays.exposure = 0.2;
                         godrays.decay = 0.96815;
                         godrays.weight = 0.58767;
                         godrays.density = 0.926;
                         light.position = godrays.mesh.position;
+						
+						setAnimation(godrays);
+						
+
                     }
                   })
             });  
@@ -198,17 +204,9 @@ var canvas = document.getElementById("renderCanvas");
             BABYLON.SceneLoader.ImportMesh("", "/models/", "armor_chest.glb", scene, function (meshes, particleSystems, skeletons) {
             
                 meshes.forEach(mesh => {
-
-					/*  const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 0.2});
-					var pointLight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(1.5, 1.5, -2), new BABYLON.Vector3(0, 0, 0), Math.PI *2, 26, scene);
-					pointLight.intensity = 2;
-					pointLight.specular = new BABYLON.Color3(1,0,0);
-					sphere.position = pointLight.position;  */
-
 					
                     if(mesh.material) {
-						//mesh.material.roughness = 0;
-						var lightmap = new BABYLON.Texture("textures/candleopacity.png", scene);
+						//var lightmap = new BABYLON.Texture("textures/candleopacity.png", scene);
 						//mesh.material.lightmapTexture = lightmap;
 
 						//Add metadata for mouse event
@@ -234,14 +232,34 @@ var canvas = document.getElementById("renderCanvas");
 				
 			};
 
+			
+
+
+
 			//--mouseover
 			var onPointerMove = function(e) {
 				var result = scene.pick(scene.pointerX, scene.pointerY,null,null,camera);
 				if (result.hit && result.pickedMesh.metadata == "armorChest") {
 					
 					console.log("Mouse on chest");
+					if(godrays && !runAnim){
+						
+						setTimeout(async () => {
+							var anim = scene.beginAnimation(godrays, 0, 20, false);
+					
+							console.log("before");
+							
+							await anim.waitAsync();
+							console.log("after");
+							runAnim = true;
+						});
+						
+					}
+					
 				}else {
 					console.log("Mouse out chest");
+					//godrays.exposure = 0.2;
+					runAnim = false;
 				}
 		
 			};
@@ -421,4 +439,28 @@ var canvas = document.getElementById("renderCanvas");
 			addSlider("intensity", 0,100,1,pointLight,panelHorizontal, gui);
 		}
 		
+	}
+
+	function setAnimation(object){
+		//Animation data
+		let startFrame = 0;
+		let endFrame = 20;
+		let frameRate = 20;
+
+		const goldLight = new BABYLON.Animation("godrays", "exposure", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+		
+		const keyframes = [];
+
+		keyframes.push({
+			frame: startFrame,
+			value: 0.2
+		});
+		keyframes.push({
+			frame: endFrame,
+			value: 1.5
+		});
+
+		goldLight.setKeys(keyframes);
+		object.animations.push(goldLight);
+
 	}
