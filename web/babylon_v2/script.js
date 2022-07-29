@@ -206,8 +206,8 @@ var canvas = document.getElementById("renderCanvas");
                 meshes.forEach(mesh => {
 					
                     if(mesh.material) {
-						//var lightmap = new BABYLON.Texture("textures/candleopacity.png", scene);
-						//mesh.material.lightmapTexture = lightmap;
+						var lightmap = new BABYLON.Texture("textures/LM.png", scene);
+						mesh.material.lightmapTexture = lightmap;
 
 						//Add metadata for mouse event
 						mesh.metadata = "armorChest";
