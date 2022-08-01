@@ -10,6 +10,7 @@ var canvas = document.getElementById("renderCanvas");
 
         var engine = null;
         var scene = null;
+		var topChest = null;
 		var runAnim = false;
 		var godrays;
         var sceneToRender = null;
@@ -200,17 +201,21 @@ var canvas = document.getElementById("renderCanvas");
                   })
             });  
 
-            //BABYLON.SceneLoader.ImportMesh("", "/models/", "chest_vertion2.glb", scene, function (meshes, particleSystems, skeletons) {
-            BABYLON.SceneLoader.ImportMesh("", "/models/", "armor_chest.glb", scene, function (meshes, particleSystems, skeletons) {
-            
+            BABYLON.SceneLoader.ImportMesh("", "/models/", "armor_chest_anim.glb", scene, function (meshes, particleSystems, skeletons) {
+				console.log(meshes)
+				topChest = meshes[2];
+				setChestAnimation(topChest);
+				
                 meshes.forEach(mesh => {
+					
 					
                     if(mesh.material) {
 						var lightmap = new BABYLON.Texture("textures/LM.png", scene);
-						mesh.material.lightmapTexture = lightmap;
+						//mesh.material.lightmapTexture = lightmap;
 
 						//Add metadata for mouse event
 						mesh.metadata = "armorChest";
+						
             
                     }
 					if(mesh.mesh) {
@@ -227,7 +232,7 @@ var canvas = document.getElementById("renderCanvas");
 			//--click
 			scene.onPointerDown = function (evt, pickResult) {
 				if (pickResult.pickedMesh && pickResult.pickedMesh.metadata === "armorChest") {
-					console.log("CLICK")
+					//console.log("CLICK")
 				}
 				
 			};
@@ -241,24 +246,34 @@ var canvas = document.getElementById("renderCanvas");
 				var result = scene.pick(scene.pointerX, scene.pointerY,null,null,camera);
 				if (result.hit && result.pickedMesh.metadata == "armorChest") {
 					
-					console.log("Mouse on chest");
+					//console.log("Mouse on chest");
 					if(godrays && !runAnim){
 						
 						setTimeout(async () => {
 							var anim = scene.beginAnimation(godrays, 0, 20, false);
 					
-							console.log("before");
+							//console.log("before");
 							
 							await anim.waitAsync();
-							console.log("after");
+							//console.log("after");
+							runAnim = true;
+						});
+
+						setTimeout(async () => {
+							var anim2 = scene.beginAnimation(topChest, 0, 20, false);
+					
+							//console.log("before");
+							
+							await anim2.waitAsync();
+							//console.log("after");
 							runAnim = true;
 						});
 						
 					}
 					
 				}else {
-					console.log("Mouse out chest");
-					//godrays.exposure = 0.2;
+					//console.log("Mouse out chest");
+					
 					runAnim = false;
 				}
 		
@@ -457,10 +472,37 @@ var canvas = document.getElementById("renderCanvas");
 		});
 		keyframes.push({
 			frame: endFrame,
-			value: 1.5
+			value: 0.3
 		});
 
 		goldLight.setKeys(keyframes);
 		object.animations.push(goldLight);
+
+	}
+
+	function setChestAnimation(object){
+		//Animation data
+		let startFrame = 0;
+		let endFrame = 20;
+		let frameRate = 20;
+
+		const chest = new BABYLON.Animation("chest", "rotation.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+		
+		const keyframes = [];
+
+		keyframes.push({
+			frame: startFrame,
+			value: 0
+		});
+		keyframes.push({
+			frame: endFrame,
+			value: -0.14
+		});
+
+		chest.setKeys(keyframes);
+		var easingFunction = new BABYLON.CircleEase();
+		easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+		chest.setEasingFunction(easingFunction);
+		object.animations.push(chest);
 
 	}
