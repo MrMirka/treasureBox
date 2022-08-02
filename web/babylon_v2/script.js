@@ -184,8 +184,10 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         
         
         	//Adding an Arc Rotate Camera
-        	var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI * 0.12, 1.1, 5, BABYLON.Vector3.Zero(), scene);
+        	var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI * 0.12, 1.1, 8, BABYLON.Vector3.Zero(), scene);
         	//camera.attachControl(canvas, true);
+			camera.position = new BABYLON.Vector3(3.7,1.6,-2.5);
+			camera.target = new BABYLON.Vector3(0,0.5,0);
     
               BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
               meshes.forEach(mesh => {
