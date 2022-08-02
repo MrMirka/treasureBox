@@ -1,5 +1,6 @@
 var canvas = document.getElementById("renderCanvas");
-
+var sceneW =  canvas.getBoundingClientRect().width;
+var sceneH =  canvas.getBoundingClientRect().width.height;
         var startRenderLoop = function (engine, canvas) {
             engine.runRenderLoop(function () {
                 if (sceneToRender && sceneToRender.activeCamera) {
@@ -8,20 +9,24 @@ var canvas = document.getElementById("renderCanvas");
             });
         }
 
+		let isOpen = false;
+		let holdAnimation = false;
         var engine = null;
         var scene = null;
 		var topChest = null;
+		var bottomChest = null;
+		var trasure = null;
 		var runAnim = false;
+
 		var godrays;
         var sceneToRender = null;
         var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
         var createScene = function () {
         	var scene = new BABYLON.Scene(engine);
 			scene.clearColor = new BABYLON.Color3(1, 0, 0);
-			scene.environmentTexture = new BABYLON.CubeTexture("textures/environment.env", scene)
+			//scene.environmentTexture = new BABYLON.CubeTexture("textures/environment.env", scene)
+			scene.environmentTexture = new BABYLON.CubeTexture("textures/chest_env.env", scene)
           
-          
-        	
         	var harmonic = function(m, lat, long, paths) {
         		var pi = Math.PI;
         		var pi2 = Math.PI * 2;
@@ -73,7 +78,6 @@ var canvas = document.getElementById("renderCanvas");
         	harmonic(m, 64, 64, paths);
         
         
-        	
         	// -----------------------------------------------
         	// clone of the BJS fire procedural texture's shader
         	BABYLON.Effect.ShadersStore["myFirePixelShader"]=
@@ -171,27 +175,23 @@ var canvas = document.getElementById("renderCanvas");
         
         	//Adding an Arc Rotate Camera
         	var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI * 0.12, 1.1, 5, BABYLON.Vector3.Zero(), scene);
-        	//camera.attachControl(canvas, false);
+        	//camera.attachControl(canvas, true);
         	//camera.wheelPrecision = 50;  // lower = faster
         	// -----------------------------------------------
     
-        	
-        	
-       
-
               BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
                 meshes.forEach(mesh => {
-				
+					trasure = meshes[0]
                     if(mesh.material) {
                         mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-                        mesh.position = new BABYLON.Vector3(-0.4, 0.6, 0);
+                        mesh.position = new BABYLON.Vector3(0.5, 0.6, -0.2);
                         mesh.rotation = new BABYLON.Vector3(0,90,0);
                         mesh.material = fireMaterial;
-                        godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, mesh, 50, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
+                        godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, mesh, 100, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
                         godrays.exposure = 0.2;
                         godrays.decay = 0.96815;
                         godrays.weight = 0.58767;
-                        godrays.density = 0.926;
+                        godrays.density = 1.226;
                         light.position = godrays.mesh.position;
 						
 						setAnimation(godrays);
@@ -201,20 +201,24 @@ var canvas = document.getElementById("renderCanvas");
                   })
             });  
 
-            BABYLON.SceneLoader.ImportMesh("", "/models/", "armor_chest_anim.glb", scene, function (meshes, particleSystems, skeletons) {
-				console.log(meshes)
-				topChest = meshes[2];
-				setChestAnimation(topChest);
+            BABYLON.SceneLoader.ImportMesh("", "/models/", "armor_chest_blender.glb", scene, function (meshes, particleSystems, skeletons) {
 				
+				topChest = meshes[2];
+				bottomChest = meshes[1];
+				topChest.parent = bottomChest;
+				trasure.parent = bottomChest;
+				topChest.setPivotPoint(new BABYLON.Vector3(0,0.66,0));
+
                 meshes.forEach(mesh => {
-					
+					microsurface = new BABYLON.Texture("textures/Armored_chest_Roughness.png", scene);
 					
                     if(mesh.material) {
-						var lightmap = new BABYLON.Texture("textures/LM.png", scene);
-						//mesh.material.lightmapTexture = lightmap;
-
+						mesh.material.microSurfaceTexture = microsurface;
+						mesh.material.microSurfaceTexture.vScale = -1;
+		
 						//Add metadata for mouse event
 						mesh.metadata = "armorChest";
+						
 						
             
                     }
@@ -232,49 +236,65 @@ var canvas = document.getElementById("renderCanvas");
 			//--click
 			scene.onPointerDown = function (evt, pickResult) {
 				if (pickResult.pickedMesh && pickResult.pickedMesh.metadata === "armorChest") {
-					//console.log("CLICK")
+					if(godrays && isOpen && !holdAnimation){
+						holdAnimation = true;
+						setOpenAnimation(topChest,-0.2, -0.5);
+						var anim2 = scene.beginAnimation(topChest, 0, 50, false);
+					}
+					
 				}
 				
 			};
-
-			
-
 
 
 			//--mouseover
 			var onPointerMove = function(e) {
 				var result = scene.pick(scene.pointerX, scene.pointerY,null,null,camera);
+				let positioX = (scene.pointerX / sceneW) - 0.5;
+				let positioY = (scene.pointerY / sceneW) - 0.5;
+				if(bottomChest) {
+					bottomChest.rotation.y = Math.sin(positioX) * 0.1 - 1;
+					
+				}
+				
+				//camera.setTarget(new BABYLON.Vector3(Math.cos(positioX) * 0.1, Math.sin(positioY) * 0.1, 0));
+				/* camera.position = new BABYLON.Vector3((-Math.sin(positioX) * 5 ),
+														2, 
+														(Math.cos(positioX) * 5 )); */
 				if (result.hit && result.pickedMesh.metadata == "armorChest") {
 					
-					//console.log("Mouse on chest");
-					if(godrays && !runAnim){
+					
+					if(godrays && !runAnim && !isOpen && !holdAnimation){
 						
+						setChestAnimation(topChest, 0, -0.2);
 						setTimeout(async () => {
 							var anim = scene.beginAnimation(godrays, 0, 20, false);
-					
-							//console.log("before");
-							
-							await anim.waitAsync();
-							//console.log("after");
+							var anim2 = scene.beginAnimation(topChest, 0, 50, false);
 							runAnim = true;
+							await anim.waitAsync();
+							await anim2.waitAsync();
+							runAnim = false;
+							isOpen = true;
+							
 						});
 
-						setTimeout(async () => {
-							var anim2 = scene.beginAnimation(topChest, 0, 20, false);
-					
-							//console.log("before");
-							
-							await anim2.waitAsync();
-							//console.log("after");
-							runAnim = true;
-						});
+						
 						
 					}
 					
 				}else {
-					//console.log("Mouse out chest");
+					if(godrays && isOpen && !runAnim && !holdAnimation){
+						setChestAnimation(topChest, -0.2, 0);
+						setTimeout(async () => {
+							runAnim = true;
+							var anim2 = scene.beginAnimation(topChest, 0, 50, false);
+							await anim2.waitAsync();
+							runAnim = false;
+							isOpen = false;
+					});
+					}
 					
-					runAnim = false;
+					//runAnim = false;
 				}
 		
 			};
@@ -283,7 +303,6 @@ var canvas = document.getElementById("renderCanvas");
 
 			//GUI
 			var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
 			var panel = new BABYLON.GUI.StackPanel();
 			panel.width = "200px";
 			panel.isVertical = true;
@@ -468,7 +487,7 @@ var canvas = document.getElementById("renderCanvas");
 
 		keyframes.push({
 			frame: startFrame,
-			value: 0.2
+			value: 0.04
 		});
 		keyframes.push({
 			frame: endFrame,
@@ -476,15 +495,18 @@ var canvas = document.getElementById("renderCanvas");
 		});
 
 		goldLight.setKeys(keyframes);
+		var easingFunction = new BABYLON.CircleEase();
+		easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
+	//	goldLight.setEasingFunction(easingFunction);
 		object.animations.push(goldLight);
 
 	}
 
-	function setChestAnimation(object){
+	function setChestAnimation(object,startValue, finishValue){
 		//Animation data
 		let startFrame = 0;
-		let endFrame = 20;
-		let frameRate = 20;
+		let endFrame = 50;
+		let frameRate = 30;
 
 		const chest = new BABYLON.Animation("chest", "rotation.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 		
@@ -492,11 +514,38 @@ var canvas = document.getElementById("renderCanvas");
 
 		keyframes.push({
 			frame: startFrame,
-			value: 0
+			value: startValue
 		});
 		keyframes.push({
 			frame: endFrame,
-			value: -0.14
+			value: finishValue
+		});
+
+		chest.setKeys(keyframes);
+		var easingFunction = new BABYLON.CircleEase();
+		easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+		chest.setEasingFunction(easingFunction);
+		object.animations.push(chest);
+
+	}
+
+	function setOpenAnimation(object,startValue, finishValue){
+		//Animation data
+		let startFrame = 0;
+		let endFrame = 50;
+		let frameRate = 30;
+
+		const chest = new BABYLON.Animation("fullOpen", "rotation.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+		
+		const keyframes = [];
+
+		keyframes.push({
+			frame: startFrame,
+			value: startValue
+		});
+		keyframes.push({
+			frame: endFrame,
+			value: finishValue
 		});
 
 		chest.setKeys(keyframes);
