@@ -24,8 +24,10 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         var createScene = function () {
         	var scene = new BABYLON.Scene(engine);
 			scene.clearColor = new BABYLON.Color3(1, 0, 0);
-			//scene.environmentTexture = new BABYLON.CubeTexture("textures/environment.env", scene)
-			scene.environmentTexture = new BABYLON.CubeTexture("textures/chest_env.env", scene)
+			//scene.environmentTexture = new BABYLON.CubeTexture("textures/chest_env.env", scene)
+			scene.environmentTexture = new BABYLON.CubeTexture("textures/chest.env", scene)
+			scene.environmentIntensity = 0.5
+			console.log(scene)
           
         	var harmonic = function(m, lat, long, paths) {
         		var pi = Math.PI;
@@ -174,7 +176,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         
         	//Adding an Arc Rotate Camera
         	var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI * 0.12, 1.1, 5, BABYLON.Vector3.Zero(), scene);
-        	camera.attachControl(canvas, true);
+        	//camera.attachControl(canvas, true);
     
               BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
               meshes.forEach(mesh => {
@@ -225,11 +227,12 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 				bottomChest.rotation.y = Math.sin(positioX) * 0.1 - 1;
 
                 meshes.forEach(mesh => {
-
 					microsurface = new BABYLON.Texture("textures/Armored_chest_Roughness.png", scene);
                     if(mesh.material) {
 						mesh.material.microSurfaceTexture = microsurface;
 						mesh.material.microSurfaceTexture.vScale = -1;
+						mesh.material.diffuseColor = new BABYLON.Vector3(1, 0.4, 0,4);
+				
 						//Add metadata for mouse event
 						mesh.metadata = "armorChest";
                     }
