@@ -158,13 +158,22 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         	
         	// or stock the firecolors array with six colors
         	fireTexture.fireColors = [
+        		new BABYLON.Color3(0.8, 0.8, 0.4),
+				new BABYLON.Color3(0.7, 0.74, 0.4),
+				new BABYLON.Color3(0.8, 0.6, 0.4),
+				new BABYLON.Color3(0.6, 0.8, 0.23),
+				new BABYLON.Color3(0.7, 0.8, 0.36),
+				new BABYLON.Color3(0.6, 0.6, 0.42),
+        	];
+
+		/* 	fireTexture.fireColors = [
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random())   
-        	];
+        	]; */
         
 
         	// Adding some experimenter's lights
@@ -317,6 +326,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 			picker1.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 			picker1.onValueChangedObservable.add(function(value) { // value is a color3
 				fireTexture.fireColors[1].copyFrom(value);
+				console.log(fireTexture.fireColors[1].copyFrom(value))
 			});
 
 			var picker2 = new BABYLON.GUI.ColorPicker();
@@ -380,7 +390,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 			panelLight.ignoreLayoutWarnings = true;
 			advancedTexture.addControl(panelLight);
 			
-			addPointLight("PointLight_1", new BABYLON.Vector3(2,3,4), advancedTexture, true);
+			//addPointLight("PointLight_1", new BABYLON.Vector3(2,3,4), advancedTexture, true);
 
         	return scene;
         }
