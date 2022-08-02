@@ -154,7 +154,6 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         	fireMaterial.backFaceCulling = false;
         
         	
-        
         	// or stock the firecolors array with six colors
         	fireTexture.fireColors = [
         		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
@@ -175,12 +174,10 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         
         	//Adding an Arc Rotate Camera
         	var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI * 0.12, 1.1, 5, BABYLON.Vector3.Zero(), scene);
-        	//camera.attachControl(canvas, true);
-        	//camera.wheelPrecision = 50;  // lower = faster
-        	// -----------------------------------------------
+        	camera.attachControl(canvas, true);
     
               BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
-                meshes.forEach(mesh => {
+              meshes.forEach(mesh => {
 					trasure = meshes[0]
                     if(mesh.material) {
                         mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
@@ -203,24 +200,38 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 
             BABYLON.SceneLoader.ImportMesh("", "/models/", "armor_chest_blender.glb", scene, function (meshes, particleSystems, skeletons) {
 				
+
+				//add shadow
+				const ground = BABYLON.Mesh.CreateGround("ground", 10, 10, 22, scene);
+				ground.position = new BABYLON.Vector3(-0.11,0,0);
+				ground.scaling = new BABYLON.Vector3(0.4,0.4,0.4);
+				var mat = new BABYLON.StandardMaterial("shadow", scene);
+				mat.diffuseColor = new BABYLON.Color3(0.02, 0.01, 0.01);
+				mat.roughness = 1;
+				mat.metallness = 0;
+				mat.specularPower = 100000000;
+				mat.opacityTexture = new BABYLON.Texture("textures/shadowMask.png", scene);
+				ground.material = mat;
+
 				topChest = meshes[2];
 				bottomChest = meshes[1];
 				topChest.parent = bottomChest;
 				trasure.parent = bottomChest;
+				ground.parent = bottomChest;
 				topChest.setPivotPoint(new BABYLON.Vector3(0,0.66,0));
 
+				//start rotation
+				let positioX = (scene.pointerX / sceneW) - 0.5;
+				bottomChest.rotation.y = Math.sin(positioX) * 0.1 - 1;
+
                 meshes.forEach(mesh => {
+
 					microsurface = new BABYLON.Texture("textures/Armored_chest_Roughness.png", scene);
-					
                     if(mesh.material) {
 						mesh.material.microSurfaceTexture = microsurface;
 						mesh.material.microSurfaceTexture.vScale = -1;
-		
 						//Add metadata for mouse event
 						mesh.metadata = "armorChest";
-						
-						
-            
                     }
 					if(mesh.mesh) {
 						var shadowGenerator = new BABYLON.ShadowGenerator(1024, pointLight);
@@ -241,9 +252,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 						setOpenAnimation(topChest,-0.2, -0.5);
 						var anim2 = scene.beginAnimation(topChest, 0, 50, false);
 					}
-					
-				}
-				
+				}	
 			};
 
 
@@ -254,16 +263,9 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 				let positioY = (scene.pointerY / sceneW) - 0.5;
 				if(bottomChest) {
 					bottomChest.rotation.y = Math.sin(positioX) * 0.1 - 1;
-					
 				}
 				
-				//camera.setTarget(new BABYLON.Vector3(Math.cos(positioX) * 0.1, Math.sin(positioY) * 0.1, 0));
-				/* camera.position = new BABYLON.Vector3((-Math.sin(positioX) * 5 ),
-														2, 
-														(Math.cos(positioX) * 5 )); */
 				if (result.hit && result.pickedMesh.metadata == "armorChest") {
-					
-					
 					if(godrays && !runAnim && !isOpen && !holdAnimation){
 						
 						setChestAnimation(topChest, 0, -0.2);
@@ -277,9 +279,6 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 							isOpen = true;
 							
 						});
-
-						
-						
 					}
 					
 				}else {
@@ -293,8 +292,6 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 							isOpen = false;
 					});
 					}
-					
-					//runAnim = false;
 				}
 		
 			};
