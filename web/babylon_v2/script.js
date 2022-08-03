@@ -179,7 +179,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         	// Adding some experimenter's lights
         	 var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 0, 0), scene);
         	light.diffuse = new BABYLON.Color3(1, 1, 1);
-        	light.intensity = .25;
+        	light.intensity = .02;
  
         
         
@@ -189,13 +189,13 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 			camera.position = new BABYLON.Vector3(3.7,1.6,-2.5);
 			camera.target = new BABYLON.Vector3(0,0.5,0);
     
-              BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure2.glb", scene, function (meshes, particleSystems, skeletons) {
-              meshes.forEach(mesh => {
+                BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure.glb", scene, function (meshes, particleSystems, skeletons) {
+              meshes.forEach(mesh => {	  
 					trasure = meshes[0]
                     if(mesh.material) {
                         mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-                        mesh.position = new BABYLON.Vector3(0.5, 0.6, -0.2);
-                        mesh.rotation = new BABYLON.Vector3(0,90,0);
+                        mesh.position = new BABYLON.Vector3(0.2, 0.4, -0.1);
+                        mesh.rotation = new BABYLON.Vector3(0,68,0);
                         mesh.material = fireMaterial;
                         godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, mesh, 100, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
                         godrays.exposure = 0.2;
@@ -205,13 +205,12 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
                         light.position = godrays.mesh.position;
 						
 						setAnimation(godrays);
-						
-
+	
                     }
                   })
-            });  
-
-            BABYLON.SceneLoader.ImportMesh("", "/models/", "armor_chest_blender.glb", scene, function (meshes, particleSystems, skeletons) {
+            });    
+ 
+            BABYLON.SceneLoader.ImportMesh("", "/models/GLTF/", "armor_chest_blender_DRACO.gltf", scene, function (meshes, particleSystems, skeletons) {
 				
 
 				//add shadow
@@ -225,6 +224,19 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 				mat.specularPower = 100000000;
 				mat.opacityTexture = new BABYLON.Texture("textures/shadowMask.png", scene);
 				ground.material = mat;
+/* 
+				trasure = meshes[1]
+				trasure.material = fireMaterial;
+				trasure.position = new BABYLON.Vector3(0,0.1,0)
+				trasure.scaling = new BABYLON.Vector3(0.9,0.9,0.9)
+				godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1.0, camera, trasure, 200, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
+				godrays.exposure = 0.3;
+				godrays.decay = 0.96815;
+				godrays.weight = 0.78767;
+				godrays.density = 1.426;
+				light.position = godrays.mesh.position;
+				
+				setAnimation(godrays);  */
 
 				topChest = meshes[2];
 				bottomChest = meshes[1];
@@ -232,18 +244,15 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 				trasure.parent = bottomChest;
 				ground.parent = bottomChest;
 				topChest.setPivotPoint(new BABYLON.Vector3(0,0.66,0));
+				
 
 				//start rotation
 				let positioX = (scene.pointerX / sceneW) - 0.5;
 				bottomChest.rotation.y = Math.sin(positioX) * 0.1 - 1;
-
+				console.log(meshes)
                 meshes.forEach(mesh => {
-					microsurface = new BABYLON.Texture("textures/Armored_chest_Roughness.png", scene);
+					
                     if(mesh.material) {
-						mesh.material.microSurfaceTexture = microsurface;
-						mesh.material.microSurfaceTexture.vScale = -1;
-						mesh.material.diffuseColor = new BABYLON.Vector3(1, 0.4, 0,4);
-				
 						//Add metadata for mouse event
 						mesh.metadata = "armorChest";
                     }
@@ -280,7 +289,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 				}
 				
 				if (result.hit && result.pickedMesh.metadata == "armorChest") {
-					if(godrays && !runAnim && !isOpen && !holdAnimation){
+					if(!runAnim && !isOpen && !holdAnimation){
 						
 						setChestAnimation(topChest, 0, -0.2);
 						setTimeout(async () => {
@@ -503,7 +512,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 		});
 		keyframes.push({
 			frame: endFrame,
-			value: 0.3
+			value: 0.27
 		});
 
 		goldLight.setKeys(keyframes);
