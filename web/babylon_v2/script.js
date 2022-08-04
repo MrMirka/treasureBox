@@ -158,22 +158,13 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         	
         	// or stock the firecolors array with six colors
         	fireTexture.fireColors = [
-        		new BABYLON.Color3(0.8, 0.8, 0.4),
-				new BABYLON.Color3(0.7, 0.74, 0.4),
-				new BABYLON.Color3(0.8, 0.6, 0.4),
-				new BABYLON.Color3(0.6, 0.8, 0.23),
-				new BABYLON.Color3(0.7, 0.8, 0.36),
-				new BABYLON.Color3(0.6, 0.6, 0.42),
+        		new BABYLON.Color3(0.8628755991343073, 0.8588249355138771, 0.5958909946269617),
+				new BABYLON.Color3(0.8617196081186744, 0.8661211087745191, 0.5348547991238075),
+				new BABYLON.Color3(0.8447836092250421, 0.8024552726344693, 0.6321067681176181),
+				new BABYLON.Color3(0.8956000276623619, 0.9005787536780432, 0.8258989204023653),
+				new BABYLON.Color3(0.9548547234058388, 0.9543866000945668, 0.8258989204023653),
+				new BABYLON.Color3(0.9548547234058388, 0.9543866000945668, 0.755383812022796),
         	];
-
-		/* 	fireTexture.fireColors = [
-        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
-        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
-        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
-        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
-        		new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
-        		new BABYLON.Color3(Math.random(), Math.random(), Math.random())   
-        	]; */
         
 
         	// Adding some experimenter's lights
@@ -328,6 +319,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 			picker1.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 			picker1.onValueChangedObservable.add(function(value) { // value is a color3
 				fireTexture.fireColors[1].copyFrom(value);
+				console.log("PICKER_1")
 				console.log(fireTexture.fireColors[1].copyFrom(value))
 			});
 
@@ -338,6 +330,8 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 			picker2.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 			picker2.onValueChangedObservable.add(function(value) { // value is a color3
 				fireTexture.fireColors[1].copyFrom(value);
+				console.log("PICKER_2")
+				console.log(fireTexture.fireColors[1].copyFrom(value))
 			});
 
 			var picker3 = new BABYLON.GUI.ColorPicker();
@@ -347,6 +341,8 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 			picker3.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 			picker3.onValueChangedObservable.add(function(value) { // value is a color3
 				fireTexture.fireColors[2].copyFrom(value);
+				console.log("PICKER_3")
+				console.log(fireTexture.fireColors[1].copyFrom(value))
 			});
 
 			var picker4 = new BABYLON.GUI.ColorPicker();
@@ -356,6 +352,8 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 			picker4.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 			picker4.onValueChangedObservable.add(function(value) { // value is a color3
 				fireTexture.fireColors[3].copyFrom(value);
+				console.log("PICKER_4")
+				console.log(fireTexture.fireColors[1].copyFrom(value))
 			});
 
 			var picker5 = new BABYLON.GUI.ColorPicker();
@@ -365,6 +363,8 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 			picker5.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 			picker5.onValueChangedObservable.add(function(value) { // value is a color3
 				fireTexture.fireColors[4].copyFrom(value);
+				console.log("PICKER_5")
+				console.log(fireTexture.fireColors[1].copyFrom(value))
 			});
 
 			var picker6 = new BABYLON.GUI.ColorPicker();
@@ -374,6 +374,8 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 			picker6.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 			picker6.onValueChangedObservable.add(function(value) { 
 				fireTexture.fireColors[5].copyFrom(value);
+				console.log("PICKER_6")
+				console.log(fireTexture.fireColors[1].copyFrom(value))
 			});
 
 			panel.addControl(picker1);    
