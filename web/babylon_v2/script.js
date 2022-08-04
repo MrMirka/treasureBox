@@ -250,7 +250,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 
 			//Add mouse logic
 			//--click
-			scene.onPointerDown = function (evt, pickResult) {
+			/* scene.onPointerDown = function (evt, pickResult) {
 				if (pickResult.pickedMesh && pickResult.pickedMesh.metadata === "armorChest") {
 					if(godrays && isOpen && !holdAnimation){
 						holdAnimation = true;
@@ -258,7 +258,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 						var anim2 = scene.beginAnimation(topChest, 0, 50, false);
 					}
 				}	
-			};
+			}; */
 
 
 			//--mouseover
