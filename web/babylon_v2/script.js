@@ -2,6 +2,7 @@ var canvas = document.getElementById("renderCanvas");
 var sceneW =  canvas.getBoundingClientRect().width;
 var sceneH =  canvas.getBoundingClientRect().width.height;
         var startRenderLoop = function (engine, canvas) {
+			console.log(engine)
             engine.runRenderLoop(function () {
                 if (sceneToRender && sceneToRender.activeCamera) {
                     sceneToRender.render();
@@ -24,10 +25,19 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         var createScene = function () {
         	var scene = new BABYLON.Scene(engine);
 			scene.clearColor = new BABYLON.Color3(1, 0, 0);
-			//scene.environmentTexture = new BABYLON.CubeTexture("textures/chest_env.env", scene)
-			scene.environmentTexture = new BABYLON.CubeTexture("textures/chest.env", scene)
-			scene.environmentIntensity = 0.5
-			console.log(scene)
+
+			var postprocess = scene.imageProcessingConfiguration
+			engine.setHardwareScalingLevel(0.5);   
+			postprocess.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+			
+			//scene.environmentTexture = new BABYLON.CubeTexture("./textures/chest.env", scene)
+			//scene.environmentTexture = new BABYLON.HDRCubeTexture("./textures/chest.hdr", scene, 128, false, true, false, true);
+			
+			scene.environmentTexture = new BABYLON.HDRCubeTexture("./textures/2022-07-20_BB_CRM_Loot_Box_HDRI_01.hdr", scene, 1024, false, true, false, true);
+			//scene.environmentTexture.rotationY = 232
+
+			scene.environmentIntensity = 1.7
+			//console.log(scene)
           
         	var harmonic = function(m, lat, long, paths) {
         		var pi = Math.PI;
@@ -176,11 +186,11 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
         
         	//Adding an Arc Rotate Camera
         	var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI * 0.12, 1.1, 8, BABYLON.Vector3.Zero(), scene);
-        	camera.attachControl(canvas, true);
+        	//camera.attachControl(canvas, true);
 			camera.position = new BABYLON.Vector3(3.7,1.6,-2.5);
 			camera.target = new BABYLON.Vector3(0,0.5,0);
     
-                BABYLON.SceneLoader.ImportMesh("", "/models/", "treasure.glb", scene, function (meshes, particleSystems, skeletons) {
+                BABYLON.SceneLoader.ImportMesh("", "./models/", "treasure.glb", scene, function (meshes, particleSystems, skeletons) {
               meshes.forEach(mesh => {	  
 					
                     if(mesh.material) {
@@ -202,7 +212,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
                   })
             });    
  
-            BABYLON.SceneLoader.ImportMesh("", "/models/GLTF/", "armor_chest_blender_DRACO.gltf", scene, function (meshes, particleSystems, skeletons) {
+            BABYLON.SceneLoader.ImportMesh("", "./models/GLTF/", "armor_chest_blender_DRACO.gltf", scene, function (meshes, particleSystems, skeletons) {
 				
 
 				//add shadow
@@ -214,7 +224,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 				mat.roughness = 1;
 				mat.metallness = 0;
 				mat.specularPower = 100000000;
-				mat.opacityTexture = new BABYLON.Texture("textures/shadowMask.png", scene);
+				mat.opacityTexture = new BABYLON.Texture("./textures/shadowMask.png", scene);
 				ground.material = mat;
 
 				topChest = meshes[2];
@@ -237,6 +247,7 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
                     if(mesh.material) {
 						//Add metadata for mouse event
 						mesh.metadata = "armorChest";
+						mesh.material.diffuseColor = new BABYLON.Vector3(1,0,0)
                     }
 					if(mesh.mesh) {
 						var shadowGenerator = new BABYLON.ShadowGenerator(1024, pointLight);
@@ -378,12 +389,44 @@ var sceneH =  canvas.getBoundingClientRect().width.height;
 				console.log(fireTexture.fireColors[1].copyFrom(value))
 			});
 
+
 			panel.addControl(picker1);    
 			panel.addControl(picker2);    
 			panel.addControl(picker3);    
 			panel.addControl(picker4);    
 			panel.addControl(picker5);    
 			panel.addControl(picker6);
+
+			var slider = new BABYLON.GUI.Slider();
+			slider.minimum = 0;
+			slider.maximum = Math.PI * 2;
+			slider.value = 0;
+			slider.height = "20px";
+			slider.width = "200px";
+			slider.onValueChangedObservable.add(function(value) {
+				
+				if (scene) {
+					scene.environmentTexture.rotationY  = value;
+					console.log("ENV_ROT "+ value)
+				}
+			});
+			panel.addControl(slider);    
+
+
+			var slider2 = new BABYLON.GUI.Slider();
+			slider2.minimum = 0;
+			slider2.maximum = 5;
+			slider2.value = 0;
+			slider2.height = "20px";
+			slider2.width = "200px";
+			slider2.onValueChangedObservable.add(function(value) {
+				
+				if (scene) {
+					scene.environmentIntensity  = value;
+					console.log("ENV_POWER "+ value)
+				}
+			});
+			panel.addControl(slider2);    
 
 			//LightPanel
 			var panelLight = new BABYLON.GUI.StackPanel();

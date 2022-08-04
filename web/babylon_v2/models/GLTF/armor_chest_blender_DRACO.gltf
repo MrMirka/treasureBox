@@ -1,6 +1,6 @@
 {
     "asset" : {
-        "generator" : "Khronos glTF Blender I/O v3.2.40",
+        "generator" : "Khronos glTF Blender I/O v3.2.43",
         "version" : "2.0"
     },
     "extensionsUsed" : [
@@ -31,12 +31,6 @@
                 "index" : 0
             },
             "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    0.5,
-                    0.5,
-                    0.5,
-                    1
-                ],
                 "metallicRoughnessTexture" : {
                     "index" : 1
                 }
@@ -48,12 +42,6 @@
                 "index" : 2
             },
             "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    0.5,
-                    0.5,
-                    0.5,
-                    1
-                ],
                 "metallicRoughnessTexture" : {
                     "index" : 3
                 }
@@ -137,8 +125,8 @@
         },
         {
             "mimeType" : "image/png",
-            "name" : "Armored_chest_Metallic-Armored_chest_Roughness",
-            "uri" : "Armored_chest_Metallic-Armored_chest_Roughness.png"
+            "name" : "Armored_chest_Metallic.png-Armored_chest_Roughness.png",
+            "uri" : "Armored_chest_Metallic_png-Armored_chest_Roughness_png.png"
         }
     ],
     "accessors" : [
